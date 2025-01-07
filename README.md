@@ -2,6 +2,10 @@
 
 A JavaScript library for converting an arbitrary string into a sequence of mnemonic words and back, with an RS1024 checksum appended to detect errors.
 
+Python version: [worcoder](https://github.com/jooray/worcoder)
+Progressive Web App: [deployed](https://cypherpunk.today/theworcoder/index.html), source:[theworcoder-pwa](https://github.com/jooray/theworcoder-pwa)
+
+
 ## Overview
 
 `worcoder-js` allows you to encode any string (ASCII or UTF-8) into a sequence of mnemonic words, based on [SLIP-0039](https://github.com/satoshilabs/slips/blob/master/slip-0039.md) wordlist and encoding. The library appends a three-word checksum to the mnemonic to ensure data integrity during decoding. If the checksum verification fails during decoding, an error is thrown to indicate that the mnemonic has been tampered with or is invalid.
