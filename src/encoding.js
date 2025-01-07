@@ -218,6 +218,11 @@ export function cleanupMnemonic(mnemonic) {
       continue;
     }
 
+    if ((word === '8') || (word == 'eight')) {
+      processedWords.push('aide');
+      continue;
+    }
+
     // No replacement needed
     processedWords.push(word);
   }
