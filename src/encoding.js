@@ -8,6 +8,8 @@ import {
 
 /**
  * Convert a string to bytes (UTF-8).
+ * @param {string} str - The input string.
+ * @returns {Uint8Array} - The UTF-8 encoded bytes.
  */
 function stringToBytes(str) {
   return new TextEncoder().encode(str);
@@ -15,11 +17,18 @@ function stringToBytes(str) {
 
 /**
  * Convert bytes to string (UTF-8).
+ * @param {Uint8Array} bytes - The input bytes.
+ * @returns {string} - The decoded string.
  */
 function bytesToString(bytes) {
   return new TextDecoder().decode(bytes);
 }
 
+/**
+ * Convert a Uint8Array to a base-1024 array.
+ * @param {Uint8Array} byteArray - The input byte array.
+ * @returns {number[]} - The base-1024 representation.
+ */
 function bytesToBase1024(byteArray) {
   // Convert bytes to one big integer, big-endian
   let bigVal = 0n;
@@ -40,6 +49,11 @@ function bytesToBase1024(byteArray) {
   return digits;
 }
 
+/**
+ * Convert a base-1024 array back to bytes.
+ * @param {number[]} arr - The base-1024 array.
+ * @returns {Uint8Array} - The reconstructed byte array.
+ */
 function base1024ToBytes(arr) {
   // Combine digits into one big integer
   let bigVal = 0n;
@@ -57,7 +71,9 @@ function base1024ToBytes(arr) {
 }
 
 /**
- * Convert a string -> array of mnemonic words (data + 3 checksum words).
+ * Convert a string to an array of mnemonic words (data + 3 checksum words).
+ * @param {string} str - The input string.
+ * @returns {string[]} - The array of mnemonic words.
  */
 export function strToWords(str) {
   // 1) string -> bytes
@@ -78,7 +94,10 @@ export function strToWords(str) {
 }
 
 /**
- * Convert array of mnemonic words -> original string. Verifies RS1024 checksum.
+ * Convert an array of mnemonic words back to the original string. Verifies RS1024 checksum.
+ * @param {string[]} words - The array of mnemonic words.
+ * @returns {string} - The original string.
+ * @throws {Error} - If the checksum is invalid or words are invalid.
  */
 export function wordsToStr(words) {
   if (words.length < CHECKSUM_LENGTH_WORDS + 1) {
@@ -122,16 +141,43 @@ export function wordsToStr(words) {
 }
 
 /**
- * Convert string -> single space-delimited mnemonic (data + checksum).
+ * Convert a string to a single space-delimited mnemonic (data + checksum).
+ * @param {string} str - The input string.
+ * @returns {string} - The mnemonic string.
  */
 export function strToMnemonic(str) {
   return strToWords(str).join(" ");
 }
 
 /**
- * Convert single space-delimited mnemonic -> original string.
+ * Convert a single space-delimited mnemonic back to the original string.
+ * @param {string} mnemonic - The mnemonic string.
+ * @returns {string} - The original string.
+ * @throws {Error} - If the checksum is invalid or mnemonic is invalid.
  */
 export function mnemonicToStr(mnemonic) {
-  const words = mnemonic.trim().split(/\s+/);
+  const words = cleanupMnemonic(mnemonic).split(" ");
   return wordsToStr(words);
+}
+
+/**
+ * Clean up the input mnemonic string.
+ *
+ * This function performs the following operations:
+ * - Strips whitespace from the beginning and end
+ * - Replaces newlines with spaces
+ * - Replaces multiple spaces with a single space
+ * - Converts all characters to lowercase
+ * - Removes "-", ".", and ","
+ *
+ * @param {string} mnemonic - The input mnemonic string to clean up.
+ * @returns {string} - The cleaned-up mnemonic string.
+ */
+export function cleanupMnemonic(mnemonic) {
+  return mnemonic
+    .trim()
+    .replace(/\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+    .replace(/[-.,]/g, '');
 }
