@@ -1,0 +1,12 @@
+{
+  "name": "worcoder-js",
+  "version": "1.0.2",
+  "description": "A simple library for converting an arbitrary string into a sequence of mnemonic words and back, with an RS1024-like checksum.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [],
+  "author": "Juraj Bednar",
+  "license": "MIT"
+}
