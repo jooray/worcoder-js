@@ -32,7 +32,9 @@ import {
   wordsToStr,
   strToMnemonic,
   mnemonicToStr,
-  cleanupMnemonic
+  cleanupMnemonic,
+  heuristicMnemonic,
+  heuristicWord
 } from "worcoder-js"; // Adjust the import path if necessary
 
 const data = "Hello, World!";
@@ -52,16 +54,27 @@ const mnemonicString = strToMnemonic(data);
 console.log("Mnemonic:", mnemonicString);
 
 // Clean up a potentially messy mnemonic string before decoding
-const messyMnemonic = "  Beyond, Gray-Strategy.\nFitness,, Lunch   Grownup Review!";
+const messyMnemonic = "  Beyond, Gray-Strategy.
+Fitness,, Lunch   Grownup Review!";
 const cleanedMnemonic = cleanupMnemonic(messyMnemonic);
 console.log("Cleaned Mnemonic:", cleanedMnemonic);
 // Output: Cleaned Mnemonic: beyond gray strategy fitness lunch grownup review
 
+// Use heuristic to fix unknown words
+const fixedMnemonic = heuristicMnemonic(messyMnemonic);
+console.log("Fixed Mnemonic:", fixedMnemonic);
+// Output: Fixed Mnemonic: beyond gray strategy spit lunch grownup review
+
+// Alternatively, apply heuristic word by word
+const fixedMnemonicWords = cleanedMnemonic.split(' ').map(word => heuristicWord(word)).join(' ');
+console.log("Fixed Mnemonic (Word-by-Word):", fixedMnemonicWords);
+// Output: Fixed Mnemonic (Word-by-Word): beyond gray strategy spit lunch grownup review
+
 // Convert single mnemonic string -> original string
 try {
-  const restoredAgain = mnemonicToStr(cleanedMnemonic);
+  const restoredAgain = mnemonicToStr(fixedMnemonic);
   console.log("Restored Again:", restoredAgain);
-  // Output: Restored Again: Beyond Gray Strategy Fitness Lunch Grownup Review
+  // Output: Restored Again: Beyond Gray Strategy Spit Lunch Grownup Review
 } catch (err) {
   if (err.message.includes("ChecksumError")) {
     console.error("Checksum error!");
@@ -74,6 +87,68 @@ try {
 ### Cleanup Function
 
 Before decoding a mnemonic, it's good practice to clean it up to ensure consistency and prevent errors due to formatting issues. The `cleanupMnemonic` function performs the following operations:
+
+- Strips whitespace from the beginning and end.
+- Replaces newlines with spaces.
+- Replaces multiple spaces with a single space.
+- Converts all characters to lowercase.
+- Removes "-", ".", and ",".
+- Handles specific replacements such as:
+  - `"and force"` → `"enforce"`
+  - `"and large"` → `"enlarge"`
+  - `"and less"` → `"endless"`
+  - `"and joy"` → `"enjoy"`
+  - `"fit"` → `"spit"`
+  - `"implies"` → `"imply"`
+
+### Heuristic Functions
+
+#### `heuristicWord(word: string): string`
+
+Applies a heuristic to correct an individual unknown or misspelled word by finding a similar word from the wordlist.
+
+**Parameters:**
+
+- `word` - The word to correct.
+
+**Returns:**
+
+- A corrected word from the wordlist if a similar word is found; otherwise, returns the original word.
+
+**Example:**
+
+```javascript
+const fixedWord = heuristicWord("implies");
+console.log(fixedWord); // Output: "imply"
+
+const fixedWord2 = heuristicWord("and joy");
+console.log(fixedWord2); // Output: "enjoy"
+
+const fixedWord3 = heuristicWord("unknownword");
+console.log(fixedWord3); // Output: "unknownword" // No similar word found
+```
+
+#### `heuristicMnemonic(mnemonic: string): string`
+
+Cleans up the mnemonic string and applies heuristics to correct any unknown words by utilizing the `heuristicWord` function.
+
+**Parameters:**
+
+- `mnemonic` - The mnemonic string to correct.
+
+**Returns:**
+
+- A cleaned and corrected mnemonic string.
+
+**Example:**
+
+```javascript
+const messyMnemonic = "  Beyond, Gray-Strategy.
+Fitness,, Lunch   Grownup Review!";
+const fixedMnemonic = heuristicMnemonic(messyMnemonic);
+console.log("Fixed Mnemonic:", fixedMnemonic);
+// Output: Fixed Mnemonic: beyond gray strategy spit lunch grownup review
+```
 
 ## API Reference
 
@@ -135,7 +210,7 @@ Converts a single space-delimited mnemonic string back to the original string af
 
 ### `cleanupMnemonic(mnemonic: string): string`
 
-Cleans up the input mnemonic string by normalizing its format.
+Cleans up the input mnemonic string by normalizing its format and applying specific replacements to correct common encoding issues.
 
 **Parameters:**
 
@@ -144,6 +219,53 @@ Cleans up the input mnemonic string by normalizing its format.
 **Returns:**
 
 - A cleaned-up mnemonic string.
+
+### `heuristicWord(word: string): string`
+
+Applies a heuristic to correct an individual unknown or misspelled word by finding a similar word from the wordlist.
+
+**Parameters:**
+
+- `word` - The word to correct.
+
+**Returns:**
+
+- A corrected word from the wordlist if a similar word is found; otherwise, returns the original word.
+
+**Example:**
+
+```javascript
+const fixedWord = heuristicWord("implies");
+console.log(fixedWord); // Output: "imply"
+
+const fixedWord2 = heuristicWord("and joy");
+console.log(fixedWord2); // Output: "enjoy"
+
+const fixedWord3 = heuristicWord("unknownword");
+console.log(fixedWord3); // Output: "unknownword" // No similar word found
+```
+
+### `heuristicMnemonic(mnemonic: string): string`
+
+Cleans up the mnemonic string and applies heuristics to correct any unknown words by utilizing the `heuristicWord` function.
+
+**Parameters:**
+
+- `mnemonic` - The mnemonic string to correct.
+
+**Returns:**
+
+- A cleaned and corrected mnemonic string.
+
+**Example:**
+
+```javascript
+const messyMnemonic = "  Beyond, Gray-Strategy.
+Fitness,, Lunch   Grownup Review!";
+const fixedMnemonic = heuristicMnemonic(messyMnemonic);
+console.log("Fixed Mnemonic:", fixedMnemonic);
+// Output: Fixed Mnemonic: beyond gray strategy spit lunch grownup review
+```
 
 ## Error Handling
 

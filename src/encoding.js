@@ -161,7 +161,7 @@ export function mnemonicToStr(mnemonic) {
 }
 
 /**
- * Clean up the input mnemonic string.
+ * Clean up the input mnemonic string by normalizing its format and applying specific replacements.
  *
  * This function performs the following operations:
  * - Strips whitespace from the beginning and end
@@ -169,15 +169,108 @@ export function mnemonicToStr(mnemonic) {
  * - Replaces multiple spaces with a single space
  * - Converts all characters to lowercase
  * - Removes "-", ".", and ","
+ * - Applies specific replacements:
+ *   - "and force" -> "enforce"
+ *   - "and large" -> "enlarge"
+ *   - "and less" -> "endless"
+ *   - "and joy" -> "enjoy"
+ *   - "fit" -> "spit"
+ *   - "implies" -> "imply"
  *
  * @param {string} mnemonic - The input mnemonic string to clean up.
  * @returns {string} - The cleaned-up mnemonic string.
  */
 export function cleanupMnemonic(mnemonic) {
-  return mnemonic
+  // Initial normalization
+  let cleaned = mnemonic
     .trim()
     .replace(/\n/g, ' ')
     .replace(/\s+/g, ' ')
     .toLowerCase()
     .replace(/[-.,]/g, '');
+
+  // Split into words for processing
+  const words = cleaned.split(' ');
+  const processedWords = [];
+
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+
+    // Handle "and" followed by specific words
+    if (word === 'and' && i < words.length - 1) {
+      const nextWord = words[i + 1];
+      const combinedWord = `en${nextWord}`;
+      if (wordlist.includes(combinedWord)) {
+        processedWords.push(combinedWord);
+        i++; // Skip the next word as it's been combined
+        continue;
+      }
+    }
+
+    // Specific replacements
+    if (word === 'fit') {
+      processedWords.push('spit');
+      continue;
+    }
+
+    if (word === 'implies') {
+      processedWords.push('imply');
+      continue;
+    }
+
+    // No replacement needed
+    processedWords.push(word);
+  }
+
+  return processedWords.join(' ');
+}
+
+/**
+ * Applies a heuristic to correct an individual unknown or misspelled word by finding a similar word from the wordlist.
+ *
+ * The heuristic prioritizes matching the first four letters for uniqueness. If no match is found, it falls back to matching the first three letters.
+ * If multiple matches are found with the same prefix length, the first occurrence in the wordlist is chosen.
+ *
+ * @param {string} word - The word to correct.
+ * @returns {string} - The corrected word from the wordlist or the original word if no correction is found.
+ */
+export function heuristicWord(word) {
+  if (wordlist.includes(word)) {
+    return word;
+  }
+
+  // Attempt to find a word with the same first four letters
+  const prefix4 = word.substring(0, 4);
+  const matches4 = wordlist.filter(w => w.startsWith(prefix4));
+
+  if (matches4.length > 0) {
+    return matches4[0]; // Return the first matching word with 4-letter prefix
+  }
+
+  // Attempt to find a word with the same first three letters
+  const prefix3 = word.substring(0, 3);
+  const matches3 = wordlist.filter(w => w.startsWith(prefix3));
+
+  if (matches3.length > 0) {
+    return matches3[0]; // Return the first matching word with 3-letter prefix
+  }
+
+  // If no similar word is found, return the original word
+  return word;
+}
+
+/**
+ * Applies heuristics to correct unknown or misspelled words in a mnemonic string.
+ *
+ * This function first cleans up the mnemonic string using `cleanupMnemonic` and then applies `heuristicWord` to each word.
+ * Unknown words are replaced with the closest matching word from the wordlist based on prefix matching.
+ *
+ * @param {string} mnemonic - The mnemonic string to correct.
+ * @returns {string} - The cleaned and corrected mnemonic string.
+ */
+export function heuristicMnemonic(mnemonic) {
+  const cleaned = cleanupMnemonic(mnemonic);
+  const words = cleaned.split(' ');
+  const correctedWords = words.map(word => heuristicWord(word));
+  return correctedWords.join(' ');
 }

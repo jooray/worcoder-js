@@ -5,5 +5,6 @@ export {
   wordsToStr,
   strToMnemonic,
   mnemonicToStr,
-  cleanupMnemonic
+  cleanupMnemonic,
+  heuristicMnemonic
 } from "./encoding.js";
