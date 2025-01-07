@@ -4,7 +4,7 @@ A JavaScript library for converting an arbitrary string into a sequence of mnemo
 
 Python version: [worcoder](https://github.com/jooray/worcoder)
 Progressive Web App: [deployed](https://cypherpunk.today/theworcoder/index.html), source:[theworcoder-pwa](https://github.com/jooray/theworcoder-pwa)
-
+Desktop app: [theworcoder-desktop](https://github.com/jooray/theworcoder-desktop)
 
 ## Overview
 
